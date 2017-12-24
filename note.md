@@ -8,9 +8,9 @@ MultinomialLogisticLossLayer的输入要是概率分布，计算公式
 这里$N$指batch_size，$\forall n, \sum_{k=1}^{K}{\hat p_n}=1$，$l_n\in\{0,1,……,K-1\}$是真实label
 
 ## 为什么pad 100
-100 padding for 2 reasons:
-    1) support very small input size
-    2) allow cropping in order to match size of different layers' feature maps
+100 padding for 2 reasons:  
+    1) support very small input size  
+    2) allow cropping in order to match size of different layers' feature maps   
 https://github.com/ZijunDeng/pytorch-semantic-segmentation/blob/master/models/fcn8s.py
 
 ## 为什么分割label的边界都那么明显  
@@ -18,18 +18,19 @@ https://github.com/ZijunDeng/pytorch-semantic-segmentation/blob/master/models/fc
 0表示背景，255表示不计入loss，带上背景，共有$21$类  
 注意不能使用cv2读label，只有使用PIL读出的才是序号label
 
-## 对loss求均值？
-对图像数目求均值还是计入loss的像素数目？
-per-pixel 应该是计入loss的像素数目
-
 ## 图像是否缩放到一致大小？
 label的缩放，只能使用近邻插值，不能引入新的类别  
 图片要按长宽比等比例缩放  
 因为batch_size=1，不需要缩放
 
-## 训练时loss一直是3.0445?
-math.exp(-3.0445) = 0.0476 = 1./21, 即每一个预测是1./21的正确率，完全随机  
-开始全部预测错误是正常的，使用VGG16_from_caffe的预训练模型初始化网络，在训练几张图片时，loss就会下降，不过也在小数点后第5位变动。
+## loss对图像数目求均值时，训练时loss一直是3.0445?
+math.exp(-3.0445) = 0.0476 = 1./21, 即每一个预测是1./21的正确率，完全随机    
+开始全部预测错误是正常的，使用VGG16_from_caffe的预训练模型初始化网络，在训练几张图片时，loss就会下降，不过也在小数点后第5位变动。  
+pytorch的预训练模型输入都是归一化后的，所以这里也要做变换div(255),normalise()
+
+## 对loss求均值？
+对图像数目求均值还是计入loss的像素数目？
+per-pixel 论文中应该说的是计入loss的像素数目，但是看别人实现的都是对图像数目求均值
 
 ## 为什么网络权重初始化为0
 init_weight函数只是用于设置反卷积层的参数，卷积层置0后，又被pretrained覆盖
