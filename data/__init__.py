@@ -1,2 +1,3 @@
-from .voc import VOCClassSeg
-from .voc import SBDClassSeg
+from .segdataset import SegDataset
+# from .voc import VOCClassSeg
+# from .voc import SBDClassSeg

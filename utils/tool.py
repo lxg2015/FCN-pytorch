@@ -2,6 +2,7 @@ import os
 import numpy as np
 import PIL.Image as Image
 
+
 def getPalette():
     '''
     http://blog.csdn.net/yhl_leo/article/details/52185581
@@ -29,12 +30,14 @@ def getPalette():
                     [0, 64, 128]], dtype='uint8').flatten()
     return pal
 
+
 def colorize_mask(mask):
     new_mask = Image.fromarray(mask.astype(np.uint8), 'P')
     pal = getPalette()
     new_mask.putpalette(pal)
-    
+
     return new_mask
+
 
 def getFileName(file_path):
     '''
@@ -42,8 +45,9 @@ def getFileName(file_path):
     '''
     full_name = file_path.split('/')[-1]
     name = os.path.splitext(full_name)[0]
-    
+
     return name
+
 
 def labelTopng(label, img_name):
     '''
@@ -52,6 +56,7 @@ def labelTopng(label, img_name):
     label = label.numpy()
     label_pil = colorize_mask(label)
     label_pil.save(img_name)
+
 
 def _fast_hist(label_true, label_pred, n_class):
     mask = (label_true >= 0) & (label_true < n_class)

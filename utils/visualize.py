@@ -1,15 +1,18 @@
-import visdom 
+import time
+import visdom
 import numpy as np
+
 
 class Visualizer():
     def __init__(self, env='lxg', **kwargs):
         '''
         **kwargs, dict option
         '''
-        self.vis = visdom.Visdom()
+        self.vis = visdom.Visdom(env=env)
         self.index = {}  # x, dict
         self.log_text = ''
-    
+        self.time_str = time.strftime("_%Y%m%d-%H%M", time.localtime(time.time()))
+
     def plot_train_val(self, loss_train=None, loss_val=None):
         '''
         plot val loss and train loss in one figure
@@ -22,19 +25,19 @@ class Visualizer():
             win_x = np.column_stack((x, x))
             self.win = self.vis.line(Y=win_y, X=win_x)
             self.index['train_val'] = x + 1
-            return 
+            return
 
-        if loss_train != None:
+        if loss_train is not None:
             self.vis.line(Y=np.array([loss_train]), X=np.array([x]),
-                        win=self.win,
-                        name='1',
-                        update='append')
+                          win=self.win,
+                          name='1',
+                          update='append')
             self.index['train_val'] = x + 1
         else:
             self.vis.line(Y=np.array([loss_val]), X=np.array([x]),
-                        win=self.win,
-                        name='2',
-                        update='append')
+                          win=self.win,
+                          name='2',
+                          update='append')
 
     def plot_many(self, d):
         '''
@@ -47,14 +50,15 @@ class Visualizer():
         '''
         plot('loss', 1.00)
         '''
-        x = self.index.get(name, 0) # if none, return 0
+        name += self.time_str
+        x = self.index.get(name, 0)  # if none, return 0
         self.vis.line(Y=np.array([y]), X=np.array([x]),
-                    win=name,
-                    opts=dict(title=name),
-                    update=None if x== 0 else 'append',
-                    **kwargs)
+                      win=name,
+                      opts=dict(title=name),
+                      update=None if x == 0 else 'append',
+                      **kwargs)
         self.index[name] = x + 1
-    
+
     def log(self, info, win='log_text'):
         '''
         show text in box not write into txt?

@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+
 def get_parameters(model, bias=False):
     for m in model.modules():
         if isinstance(m, nn.Conv2d):

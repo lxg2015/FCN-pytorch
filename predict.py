@@ -1,63 +1,45 @@
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 import torch
 import cv2
-import numpy as np
-from torch.autograd import Variable
-import torchvision.transforms as transforms
 import models
 import utils
 import data
 import random
 
+import numpy as np
+import torchvision.transforms as transforms
+from utils.cfg import cfg
 
-def main():    
-    use_cuda = torch.cuda.is_available()
-    path = os.path.expanduser('~/codedata/seg/')
-    
-    dataset = data.VOCClassSeg(root=path,
-                            split='val.txt',
-                            transform=True)
+os.environ['CUDA_VISIBLE_DEVICES'] = cfg['gpus']
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    model = models.FCN8(path)
-    model.load('SBD.pth')
-    model.eval()
-    
-    if use_cuda:
-        model.cuda()
-    
-    criterion = utils.CrossEntropyLoss2d(size_average=False, ignore_index=255)
+dataset = data.SegDataset(dataset=cfg['dataset'], split='val')
 
-    for i in range(len(dataset)):
-        idx = random.randrange(0, len(dataset))
-        img, label = dataset[idx]
-        img_name = str(i)
+print('load model.....')
+if cfg['model'] == 'FCN':
+    net = models.FCN(cfg['num_classes'], cfg['num_loss'], backbone=cfg['backbone']).to(device)
+elif cfg['model'] == 'UNet':
+    net = models.UNet(3, cfg['num_classes']).to(device)
+elif cfg['model'] == 'PSPNet':
+    net = models.PSPNet(cfg['num_classes']).to(device)
+else:
+    print('%s is not defined' % cfg['model'])
 
-        img_src, _ = dataset.untransform(img, label)
-        cv2.imwrite(path + 'image/%s_src.jpg' % img_name, img_src)
-        utils.tool.labelTopng(label, path + 'image/%s_label.png' % img_name)
-        
-        print(img_name)
+net.load_state_dict(torch.load(cfg['checkpoint'])['net'])
+net.eval()
+torch.set_grad_enabled(False)
 
-        if use_cuda:
-            img = img.cuda()
-            label = label.cuda()
-        img = Variable(img.unsqueeze(0), volatile=True)
-        label = Variable(label.unsqueeze(0), volatile=True)
+for i in range(len(dataset)):
+    img, label = dataset[i]
+    img_src, _ = dataset.untransform(img)
+    cv2.imwrite('./image/%d_src.jpg' % i, img_src)
 
-        out = model(img)
-        loss = criterion(out, label)
-        print('loss:', loss.data[0])
+    img = img.to(device)
+    out = net(img.unsqueeze(0))
+    y0 = out[0].data.cpu()
+    label = y0.max(1)[1].squeeze_(1).squeeze_(0)
+    utils.tool.labelTopng(label, './image/%d_predict.png' % i)
 
-        label = out.data.max(1)[1].squeeze_(1).squeeze_(0)
-        if use_cuda:
-            label = label.cpu()
-        
-        utils.tool.labelTopng(label, path + 'image/%s_out.png' % img_name)
-        
-        if i == 10:
-            break
-
-if __name__ == '__main__':
-    main()
-    
+    print(i)
+    if i > 10:
+        break
