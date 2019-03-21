@@ -1,0 +1,2 @@
+./picture/0_out.png
+./picture/1_out.png

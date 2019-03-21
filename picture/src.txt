@@ -1,0 +1,3 @@
+./picture/0_src.jpg
+./picture/1_src.jpg
+
