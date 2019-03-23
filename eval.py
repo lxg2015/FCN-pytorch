@@ -13,6 +13,12 @@ def alpha_blend(input_image, segmentation_mask, alpha=0.5):
     """
     blended = np.zeros(input_image.size, dtype=np.float32)
     blended = input_image * alpha + segmentation_mask * (1 - alpha)
+    
+    # First create the image with alpha channel
+    # rgba = cv2.cvtColor(rgb_data, cv2.COLOR_RGB2RGBA)
+    # Then assign the mask to the last channel of the image
+    # rgba[:, :, 3] = alpha_data
+    
     return blended
 
 
