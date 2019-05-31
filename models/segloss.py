@@ -15,4 +15,3 @@ class SegLoss(nn.Module):
             loss += self.criterion(x, y)
         loss /= (batch_size * len(xs))
         return loss
-        

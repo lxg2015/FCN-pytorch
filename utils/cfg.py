@@ -2,7 +2,7 @@ cfg = {
     # dataset
     "dataset": "voc",
     "img_size": 512,
-    "num_workers": 5,
+    "num_workers": 0,
     "num_classes": 21,
     
     # model
